@@ -345,9 +345,18 @@ class GameView extends SurfaceView {
         if(canvas != null)
         {
             if(drawbkg){
+                gameEnd = false;
                 if(newlevel)
                 {
                      level++;
+                     roll = 0;
+                     count = 0;
+                     playerPos = 1;
+                     newlevel = false;
+                }
+                else
+                {
+                    level = 0;
                 }
 //                player.setWidth(spritewidth);
 //                player.setHeight(spriteheight);
@@ -371,7 +380,6 @@ class GameView extends SurfaceView {
                 logo = Bitmap.createScaledBitmap(logo, step/2, step/2,true);
 
                 drawbkg = false;
-                newlevel = false;
 
                 lifeLeft = 2*step;
                 heartLeft = 9*step/2;
@@ -1131,6 +1139,7 @@ class GameView extends SurfaceView {
 
     private void restartGame()
     {
+        newlevel = false;
         healthCountImg.clear();
         emptyCountImg.clear();
         lifeCountImg.clear();
@@ -1277,20 +1286,21 @@ class GameView extends SurfaceView {
                     }
                     else if(showCongratulations || gameOver)
                     {
+                        x1 = 20;
                         roll = 0;
                         count = 0;
-                        level = 0;
+//                        level = 0;
                         showCongratulations = false;
                         gameOver = false;
                         show = true;
                         rolling = true;
                         gameEnd = false;
-                        newlevel = false;
                         drawbkg = true;
                         playerPos = 1;
                         healthCount = 3;
                         lifeCount = 1;
                         shieldCount = 0;
+                        collided = false;
                         assets.clear();
                         destroyDataBase();
                         restartGame();
