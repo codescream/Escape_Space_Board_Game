@@ -1,0 +1,670 @@
+package com.example.Escape_Space;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.util.DisplayMetrics;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.widget.Toast;
+
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+class GameView extends SurfaceView {
+
+    private int[] penaltyrange;
+    private Bitmap player;
+    private Bitmap blackhole;
+    private Bitmap blob;
+    private Bitmap pod;
+    private Bitmap portal;
+    private Bitmap spider;
+    private SurfaceHolder holder;
+    private GameThread gameThread;
+    private Bitmap mFinalbitmap;
+    private boolean drawbkg = true;
+    private boolean bounce = false;
+    private boolean bouncedone = false;
+    private int penaltyindex = 0;
+    private int bounceCount = 0;
+    private int[][] board;
+    private float[][] objPos;
+    //    private Context context;
+    private Activity activity;
+
+
+    //character position info
+    private float x1 = 20;
+    private float  y1;
+    private int xspeed = 2;
+    private int xspeedtemp;
+    private int yspeed = 0;
+    private float xinterim;
+    private float yinterim;
+    private float ybubble;
+    private int resizedPW = 0;
+    private int resizedPH = 0;
+    private int spritewidth = 0;
+    private int spriteheight = 0;
+    private int diff = -5;
+    private int roll;
+    private int row;
+    private int col;
+    private int count = 0;
+    private int counter = 1;
+    private int reverse = 9;
+    private int columncheck = 0;
+    private int step;
+    private int ystep;
+    private Bitmap gameObjs[];
+    private int[] rowlayout;
+    private int[] randcells;
+    private int stepcheck = 0;
+    private String[] gameitems;
+    private int boardPos[];
+    private int[] penalty;
+    private List<Integer> arrayList = new ArrayList<>();
+    private int[] uniquenums;
+    private int playerPos = 1; // initialize player position
+    int width;
+    int height;
+    private boolean newEnd = true;
+    private boolean collided = false;
+    private boolean temp = false;
+    private int backwardcount = 0;
+
+    public GameView(Context context, Activity activity) {
+        super(context);
+        gameThread = new GameThread(this);
+
+        this.activity = activity;
+
+        player = BitmapFactory.decodeResource(getResources(), R.drawable.player);
+        blackhole = BitmapFactory.decodeResource(getResources(), R.drawable.blackhole);
+        blob = BitmapFactory.decodeResource(getResources(), R.drawable.blob);
+        pod = BitmapFactory.decodeResource(getResources(), R.drawable.pod);
+        portal = BitmapFactory.decodeResource(getResources(), R.drawable.portal);
+        spider = BitmapFactory.decodeResource(getResources(), R.drawable.spider);
+//        this.context = context;
+
+        pod = Bitmap.createScaledBitmap(pod, 2*pod.getWidth()/3, 3*pod.getHeight()/4, true);
+
+        objPos = new float[5][2];
+        rowlayout = new int[]{5, 4, 3, 2, 1};
+        gameObjs = new Bitmap[]{blob, blob, spider, pod, portal};
+        penaltyrange = new int[]{6, 3, 6, 6, 1}; // max spaces back or forward
+        gameitems = new String[]{"blob1", "blob2", "spider", "pod", "portal"};
+
+        uniquenums = new int[gameObjs.length];
+        penalty = new int[gameObjs.length];
+
+        for(int i = 0; i < uniquenums.length; i++) // create random penalties or reward
+        {
+            if(gameitems[i] == "portal") // no penalty or reward for portal object
+            {
+                penalty[i] = 0;
+            }
+            else // if(gameitems[i] == "pod")
+            {
+                if(gameitems[i] == "pod")
+                {
+                    penalty[i] = createUniqueRandomNumber(1, penaltyrange[i]);
+                }
+                else
+                {
+                    penalty[i] = -createUniqueRandomNumber(1, penaltyrange[i]);
+                }
+            }
+        }
+
+        arrayList.clear();
+        Random r = new Random();
+        int highestplacedenemy = r.nextInt(3);
+
+        for(int i = 0; i < uniquenums.length; i++) // create position on the board
+        {
+            if(gameitems[i] == "pod") // places pod in between 3 enemies at all times???
+            {
+                Collections.sort(arrayList);
+                int max = arrayList.get(arrayList.size() - 1);
+                int min = arrayList.get(0);
+                uniquenums[i] = createUniqueRandomNumber(min, max);
+            }
+            else
+            {
+                if(i == highestplacedenemy)
+                {
+                    uniquenums[i] = createUniqueRandomNumber(31, 49); // place the farthest placed enemy btw 31 - 49
+                }
+                else
+                {
+                    uniquenums[i] = createUniqueRandomNumber(-penalty[i] + 1, 49);
+                }
+            }
+        }
+
+        randcells = uniquenums;
+
+        Resources resources = context.getResources();
+        DisplayMetrics dm = resources.getDisplayMetrics();
+        width = dm.widthPixels;
+        height = dm.heightPixels;
+
+        roll = rolldice();
+
+        //board number layout
+        board = new int[5][10];
+        boardPos = new int[5];
+
+        for(int i = board.length - 1; i >= 0; i--) // number game board 1 - 50
+        {
+            for(int j = 0; j < board[i].length; j++)
+            {
+                if(i % 2 == 0)
+                {
+                    board[i][j] = counter++;
+                }
+                else
+                {
+                    int subindex = reverse - j;
+                    board[i][subindex] = counter++;
+                }
+            }
+        }
+
+        spriteheight = player.getHeight();
+        spritewidth = player.getWidth();
+
+        resizedPW = spritewidth;
+        resizedPH = spriteheight;
+
+        holder = getHolder();
+
+        holder.addCallback(new SurfaceHolder.Callback() {
+            @SuppressLint("WrongCall")
+            @Override
+            public void surfaceCreated(SurfaceHolder surfaceHolder) {
+                gameThread.setRunning(true);
+                gameThread.start();
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+                boolean retry = true;
+                gameThread.setRunning(false);
+
+                while (retry)
+                {
+                    try {
+                        gameThread.join();
+                        retry = false;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private int rolldice() {
+        Random r = new Random();
+        final int rolled = r.nextInt(7 - 1) + 1;
+        playerPos += rolled;
+
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(activity, "you rolled a " + rolled, Toast.LENGTH_SHORT).show();
+            }
+        });
+        return rolled;
+    }
+
+    @Override
+    public void onDraw(Canvas canvas) {
+
+        if(drawbkg){
+            step = Math.round(canvas.getWidth()/10);
+            y1 = canvas.getHeight() - spriteheight - 15; // 15 is arbitrary offset. I guess spriteheight alone should do okay, places obj right at bottom.
+            yinterim = y1;
+            mFinalbitmap= BitmapFactory.decodeResource(getResources(), R.drawable.moon);
+            yspeed = Math.round((canvas.getHeight())/5);
+            ystep = yspeed;
+//            pod = Bitmap.createScaledBitmap(pod, 3*pod.getWidth()/4, 3*pod.getHeight()/4, true);
+            mFinalbitmap = resizeImage(mFinalbitmap, canvas.getWidth(), canvas.getHeight());
+            drawbkg = false;
+        }
+
+        //check border collision left/right
+        if((x1 < 0 || (x1 + spritewidth) > canvas.getWidth()) && newEnd) // (x1 < spritewidth/2 || (x1 + 2*spritewidth)
+        {
+            xspeed *= -1;
+            if(newEnd)
+            {
+                if(collided)
+                {
+//                    xspeed *= -1;
+                    y1 += yspeed;
+                    diff = 5;
+                }
+                else
+                {
+                    y1 -= yspeed;
+                    diff = -5;
+                }
+
+                if(xspeed < 0) // ensures player obj is centered as it moves up
+                    x1 = x1 - 30;
+                else
+                    x1 = x1 + 30;
+
+                newEnd = false;
+                if(xspeed < 0)
+                    player = BitmapFactory.decodeResource(getResources(), R.drawable.player_left);
+                else
+                    player = BitmapFactory.decodeResource(getResources(), R.drawable.player);
+            }
+
+            if(y1 < 0 || y1+spriteheight > canvas.getHeight())
+            {
+                yspeed *= -1;
+                if(y1 < 0)
+                    diff = 5;
+
+                if(y1+spriteheight > canvas.getHeight())
+                    diff = -5;
+
+                y1 -= yspeed;
+            }
+        }
+
+        if(!bounce)
+        {
+            if(count != roll)
+            {
+//            if((x1 + step) > canvas.getWidth() && y1 < spriteheight) // detects when player get to the end of the board i.e 50
+//            {
+//                player = BitmapFactory.decodeResource(getResources(), R.drawable.player);
+//                activity.runOnUiThread(new Runnable() {
+//                    public void run() {
+//                        Toast.makeText(activity, "congratulations!!! you have escaped Mars!", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+//            }
+                if(yinterim != y1)
+                {
+                    yinterim += diff;
+
+                    if(diff > 0)
+                    {
+                        if(yinterim >= y1)
+                        {
+                            yinterim = y1;
+                            if(collided)
+                            {
+                                backwardcount++;
+                            }
+                            count++;
+                            stepcheck = 0;
+                        }
+                    }
+                    else
+                    {
+                        if(yinterim <= y1)
+                        {
+                            yinterim = y1;
+                            if(collided)
+                            {
+                                backwardcount++;
+                            }
+                            count++;
+                            stepcheck = 0;
+                        }
+                    }
+
+                    if(collided && count == roll)
+                    {
+                        xspeed *= -1;
+                        temp = true;
+                        collided = false;
+                    }
+
+                }
+                else
+                {
+                    x1 += xspeed;
+                    newEnd = true;
+                    stepcheck += (xspeed < 0) ? (-xspeed) : xspeed;
+                    if(stepcheck >= step)
+                    {
+                        count++;
+                        stepcheck = 0;
+                        if((x1 + step) > canvas.getWidth() && y1 < spriteheight) // detects when player get to the end of the board i.e 50
+                        {
+                            player = BitmapFactory.decodeResource(getResources(), R.drawable.player);
+                            count = roll;
+                            activity.runOnUiThread(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(activity, "congratulations!!! you have escaped Mars!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            xinterim = x1;
+                        }
+
+                        if(collided)
+                        {
+                            backwardcount++;
+                            if(backwardcount == roll)
+                            {
+                                xspeed *= -1;
+                                if(temp)
+                                {
+                                    xspeed *= -1;
+                                    temp = false;
+                                }
+//                                yspeed *= -1;
+                                backwardcount = 0;
+                                collided = false;
+                            }
+                        }
+                    }
+                }
+            }
+            else if((x1 + step) > canvas.getWidth() && y1 < spriteheight)
+            {
+                // code for when player reaches the end of the game - block 50
+
+                if(resizedPH <= 1 || resizedPW <= 1)
+                {
+                    resizedPH= 1;
+                    resizedPW = 1;
+                }
+                else
+                {
+                    resizedPW -= 1;
+                    resizedPH -= 1;
+
+                    if(x1 < xinterim + (float)step/6)
+                    {
+                        x1 += (float)step/157;
+                    }
+                    else
+                    {
+                        x1 += (float)step/900;
+                    }
+                }
+                yinterim += 0.30;
+                player = Bitmap.createScaledBitmap(player, resizedPW, resizedPH, true); // code to make player disappear on reaching portal
+            }
+            else
+            {
+                count = 0;
+
+                String objColl = null; // variable to check if player has collided with other board obj
+                try{
+                    for(int i = 0; i < boardPos.length; i++)
+                    {
+                        final String obj;
+                        if(playerPos == boardPos[i])
+                        {
+                            penaltyindex = i;
+                            obj = gameitems[i];
+                            objColl = obj;
+                            activity.runOnUiThread(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(activity, "player collided with " + obj, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            ybubble = yinterim;
+                            bouncedone = false;
+                            bounce = true;
+                        }
+                    }
+
+                    if(objColl == null)
+                    {
+                        gameThread.sleep((3000));
+                    }
+                }
+                catch (InterruptedException e)
+                {
+
+                }
+                finally {
+                    if(objColl == null)
+                    {
+                        roll = rolldice();
+                    }
+                }
+//            gameThread.start();
+            }
+        }
+        else
+        {
+            // put code to create bounce
+            if(!bouncedone)
+            {
+                if(yinterim >= ybubble - 15 && bounceCount == 0) // bubbles player up
+                {
+                    yinterim -= 1;
+                }
+                else
+                {
+                    if(yinterim <= ybubble) // bubbles player back down
+                    {
+                        yinterim += 1;
+                        bounceCount++;
+                    }
+                    else
+                    {
+                        yinterim = ybubble; // sets back initial value of yinterim
+                        bounce = false;
+                        bounceCount = 0;
+                        bouncedone = true;
+//                    roll = rolldice();
+                        applyPenalty();
+                    }
+                }
+            }
+        }
+
+        if(canvas != null)
+        {
+            canvas.drawBitmap(mFinalbitmap, 0, 0, null);
+
+            for(int i = 0; i < randcells.length; i++) // randomly positioning objects
+            {
+                columncheck = 1;
+                row = randcells[i] / 10;
+                col = randcells[i] % 10;
+
+                if(col != 0) {
+                    columncheck++;
+                }
+                else
+                {
+                    if(row % 2 == 0)
+                    {
+                        col = 1;
+                    }
+                    else
+                    {
+                        col = 10;
+                    }
+                    row--;
+                }
+
+                if(row % 2 != 0 && columncheck % 2 == 0)
+                {
+                    col = 11 - col;
+                }
+
+                if(gameitems[i] != "portal")
+                {
+                    objPos[i][0] = (col*step - step) + step/2 - gameObjs[i].getWidth()/2;
+                    if(gameitems[i] == "pod")
+                    {
+                        objPos[i][1] = (rowlayout[row]*ystep - ystep) + ystep/2 - 2*gameObjs[i].getHeight()/3;
+                    }
+                    else
+                    {
+                        objPos[i][1] = (rowlayout[row]*ystep - ystep) + ystep/2 - gameObjs[i].getHeight()/2;
+                    }
+                    boardPos[i] = randcells[i];
+                }
+                else // fixes the portal obj to the last block - i.e 50
+                {
+                    boardPos[i] = 50;
+                    objPos[i][0] = (10*step - step) + step/2 - gameObjs[i].getWidth()/2;
+                    objPos[i][1] = (1*ystep - ystep) + ystep/2 - gameObjs[i].getHeight()/2;
+                }
+                canvas.drawBitmap(gameObjs[i], objPos[i][0], objPos[i][1], null);
+            }
+            canvas.drawBitmap(player, x1, yinterim, null);
+        }
+    }
+
+    private void applyPenalty() {
+        // apply code to move player forward or backward
+        if(gameitems[penaltyindex] == "pod")
+        {
+            activity.runOnUiThread(new Runnable() {
+                public void run() {
+                    Toast.makeText(activity, "moving player forward " + penalty[penaltyindex] + " spaces", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            playerPos += penalty[penaltyindex];
+            roll = penalty[penaltyindex];
+        }
+        else
+        {
+//            if(xspeed < 0)
+//                player = BitmapFactory.decodeResource(getResources(), R.drawable.player_left);
+//            else
+//                player = BitmapFactory.decodeResource(getResources(), R.drawable.player);
+
+            activity.runOnUiThread(new Runnable() {
+                public void run() {
+                    Toast.makeText(activity, "moving player backward " + penalty[penaltyindex] + " spaces", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            playerPos += penalty[penaltyindex];
+            roll = -penalty[penaltyindex];
+//            xspeedtemp = xspeed;
+
+            xspeed *= -1;
+            collided = true;
+//            temp = true;
+        }
+    }
+
+    private int createUniqueRandomNumber(int from, int to) {
+
+        int uniquenum = 0;
+        boolean numadded = false;
+        Random r = new Random();
+        int randnum = r.nextInt(to + 1 - from) + from;
+
+        while(!numadded)
+        {
+            if(!arrayList.contains(randnum))
+            {
+                arrayList.add(randnum);
+                uniquenum = randnum;
+//                uniquenums[arrayList.size()] = randnum;
+                numadded = true;
+            }
+            else
+            {
+                randnum = r.nextInt(to + 1 - from) + from;
+            }
+        }
+
+        return uniquenum;
+    }
+
+    public Bitmap resizeImage(Bitmap image, int maxWidth, int maxHeight)
+    {
+        Bitmap resizedImage = null;
+        try {
+            int imageHeight = image.getHeight();
+
+
+            if (imageHeight > maxHeight)
+                imageHeight = maxHeight;
+            int imageWidth = (imageHeight * image.getWidth())
+                    / image.getHeight();
+
+            if (imageWidth > maxWidth) {
+                imageWidth = maxWidth;
+                imageHeight = (imageWidth * image.getHeight())
+                        / image.getWidth();
+            }
+
+            if (imageHeight > maxHeight)
+                imageHeight = maxHeight;
+            if (imageWidth > maxWidth)
+                imageWidth = maxWidth;
+
+
+            resizedImage = Bitmap.createScaledBitmap(image, maxWidth,
+                    imageHeight, true);
+        } catch (OutOfMemoryError e) {
+
+            e.printStackTrace();
+        }catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resizedImage;
+    }
+
+    //    public int[] createUniqueRandomNumbers(int from, int to)
+//    {
+//        int n = to - from + 1; // number of integers required to return
+//
+//        // create an array to store unique random numbers
+//        int a[] = new int[n];
+//        for(int i = 1; i <= n; i++)
+//        {
+//            a[i - 1] = i;
+//        }
+//
+//        // an array to store the result
+//        int[] result = new int[n];
+//
+//        SecureRandom rd = new SecureRandom();
+//        int x = n;
+//        for(int i = 1; i <= n; i++)
+//        {
+//            // k is a random index in [0, x]
+//            int k = rd.nextInt(x);
+//
+//            result[i - 1] = a[k];
+//
+//            a[k] = a[x - 1];
+//
+//            x--;
+//        }
+//        return result;
+//    }
+}

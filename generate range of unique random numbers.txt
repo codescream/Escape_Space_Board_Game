@@ -1,0 +1,20 @@
+private int[] createUniqueRandomNumbers(int from, int to, int numints) {
+        
+        uniquenums = new int[numints];
+        int count = 0;
+
+        while(count < numints)
+        {
+            Random r = new Random();
+            int randnum = r.nextInt(to + 1 - from) + from;
+
+            if(!arrayList.contains(randnum)) // checks to see if array contains randnum value
+            {
+                arrayList.add(randnum);
+                uniquenums[count] = randnum;
+                count++;
+            }
+        }
+
+        return uniquenums;
+    }
