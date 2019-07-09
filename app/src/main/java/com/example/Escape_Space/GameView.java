@@ -219,8 +219,6 @@ class GameView extends SurfaceView {
 
 
         rowlayout = new int[]{5, 4, 3, 2, 1};
-//        enemyrowpos = new int[][]{createUniqueRandomNumbers(2, 5, 4),
-//                                    createUniqueRandomNumbers(2, 6, 5)}; //createUniqueRandomNumbers(2, 5, 4);
 
         enemyrowpos = createUniqueRandomNumbers(2, 5, 4);
         arrayList.clear();
@@ -322,7 +320,6 @@ class GameView extends SurfaceView {
 
     @Override
     public void onDraw(Canvas canvas) {
-//        level = retLevel;///////////////////////////////////////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////// RETRIVE DTAT ////////////////////////////////////////////
         if(newGame) {//*****************************osama
             //hi
@@ -358,8 +355,6 @@ class GameView extends SurfaceView {
                 {
                     level = 0;
                 }
-//                player.setWidth(spritewidth);
-//                player.setHeight(spriteheight);
                 player = BitmapFactory.decodeResource(getResources(), R.drawable.player);
                 player = Bitmap.createScaledBitmap(player, spritewidth, spriteheight, true);
                 mFinalbitmap = BitmapFactory.decodeResource(getResources(), background[level]);
@@ -367,7 +362,6 @@ class GameView extends SurfaceView {
                 resizedPW = spritewidth;
                 resizedPH = spriteheight;
 
-//            pod = Bitmap.createScaledBitmap(pod, 3*pod.getWidth()/4, 3*pod.getHeight()/4, true);
                 mFinalbitmap = resizeImage(mFinalbitmap, canvas.getWidth(), canvas.getHeight());
                 step = Math.round(mFinalbitmap.getWidth()/10);
                 xspeed = step/50;
@@ -889,7 +883,6 @@ class GameView extends SurfaceView {
             }
             else if(gameOver)
             {
-//                player = BitmapFactory.decodeResource(getResources(), R.drawable.dead);
                 long now = android.os.SystemClock.uptimeMillis();
 
                 if (moviestart == 0) { // first time
@@ -901,7 +894,6 @@ class GameView extends SurfaceView {
 
                 gamelost.setTime(relTime);
 
-//                congrats.draw(canvas,mFinalbitmap.getWidth()/2 - step/2,mFinalbitmap.getHeight()/2);
                 gamelost.draw(canvas,mFinalbitmap.getWidth()/2 - 21*step/10,mFinalbitmap.getHeight()/2 - 3*step/2);
 
                 bwidth =  mFinalbitmap.getHeight()/4;
@@ -935,7 +927,6 @@ class GameView extends SurfaceView {
 
                 congrats.setTime(relTime);
 
-//                congrats.draw(canvas,mFinalbitmap.getWidth()/2 - step/2,mFinalbitmap.getHeight()/2);
                 congrats.draw(canvas,mFinalbitmap.getWidth()/2 - 21*step/10,mFinalbitmap.getHeight()/2 - 3*step/2);
 
                 bwidth =  mFinalbitmap.getHeight()/4;
@@ -950,7 +941,6 @@ class GameView extends SurfaceView {
     }
 
     private void applyPenalty() {
-//        show = true;
         // apply code to move player forward or backward
         if(gameitems[level][penaltyindex] == "pod")
         {
@@ -1014,11 +1004,9 @@ class GameView extends SurfaceView {
 
                 playerPos += penalty[level][penaltyindex];
                 roll = -penalty[level][penaltyindex];
-//            xspeedtemp = xspeed;
 
                 xspeed *= -2;
                 collided = true;
-//            temp = true;
 
                 //stat deduction
                 healthCount--;
@@ -1065,7 +1053,7 @@ class GameView extends SurfaceView {
             {
                 arrayList.add(randnum);
                 uniquenum = randnum;
-//                uniquenums[arrayList.size()] = randnum;
+
                 numadded = true;
             }
             else
@@ -1144,15 +1132,6 @@ class GameView extends SurfaceView {
         emptyCountImg.clear();
         lifeCountImg.clear();
         shieldCountImg.clear();
-//        for(int i = 0; i < healthMax; i++)
-//        {
-//            healthCountImg.add(statHeart);
-//        }
-//        for(int i = 0; i < healthMax; i++)
-//        {
-//            emptyCountImg.add(emptyHeart);
-//        }
-//        shieldCountImg.add(statShield); //starts with no shield available
 
         for(int i = 0; i < healthCount; i++)
         {
@@ -1171,8 +1150,6 @@ class GameView extends SurfaceView {
             lifeCountImg.add(statLife);
         }
 
-//        lifeCountImg.add(statLife);
-
         for(int j = 0; j < maxlevel;  j++)
         {
             for(int i = 0; i < uniquenums[j].length; i++) // create random penalties or reward
@@ -1181,7 +1158,7 @@ class GameView extends SurfaceView {
                 {
                     penalty[j][i] = 0;
                 }
-                else // if(gameitems[i] == "pod")
+                else
                 {
                     if(i >= 5)
                     {
@@ -1281,8 +1258,6 @@ class GameView extends SurfaceView {
 
                         show = false;
                         gameEnd = true;
-
-//                    rolldice();
                     }
                     else if(showCongratulations || gameOver)
                     {
