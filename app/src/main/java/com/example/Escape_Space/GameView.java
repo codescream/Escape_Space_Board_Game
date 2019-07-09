@@ -347,13 +347,7 @@ class GameView extends SurfaceView {
             if(drawbkg){
                 if(newlevel)
                 {
-                    // level++;
-                    if(level < 1)
-                        level++;
-                    else
-                    {
-                        level--;
-                    }
+                     level++;
                 }
 //                player.setWidth(spritewidth);
 //                player.setHeight(spriteheight);
@@ -377,6 +371,7 @@ class GameView extends SurfaceView {
                 logo = Bitmap.createScaledBitmap(logo, step/2, step/2,true);
 
                 drawbkg = false;
+                newlevel = false;
 
                 lifeLeft = 2*step;
                 heartLeft = 9*step/2;
