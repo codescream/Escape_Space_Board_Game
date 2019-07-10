@@ -144,7 +144,7 @@ class GameView extends SurfaceView {
     private  int emptyHeartCount = 3;
     private int emptyHeartLeft = 760;
     private List<Bitmap> emptyCountImg = new ArrayList<Bitmap>();
-    public static int healthCount = 3;//*******************************osama
+    public static int healthCount = 1;//*******************************osama
     private int healthMax = 3;
     private Bitmap statShield;
     private int shieldLeft = 1450;
@@ -154,7 +154,7 @@ class GameView extends SurfaceView {
     private Bitmap statLife;
     private int lifeLeft = 200;
     private List<Bitmap> lifeCountImg = new ArrayList<Bitmap>();
-    public static int lifeCount = 1;//*******************************osama
+    public static int lifeCount = 0;//*******************************osama
     private int lifeMax = 3;
     private boolean showCongratulations = false;
     private boolean gameOver = false;
@@ -894,7 +894,7 @@ class GameView extends SurfaceView {
 
                 gamelost.setTime(relTime);
 
-                gamelost.draw(canvas,mFinalbitmap.getWidth()/2 - 21*step/10,mFinalbitmap.getHeight()/2 - 3*step/2);
+                gamelost.draw(canvas,21*step/8,mFinalbitmap.getHeight()/2 - 3*step/2);
 
                 bwidth =  mFinalbitmap.getHeight()/4;
                 bheight = mFinalbitmap.getHeight()/4;
