@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         saveData();
-        gameThread.setRunning(false);
+        gameThread.setRunning(false); // ensure thread is not running
     }
 
 //    @Override
