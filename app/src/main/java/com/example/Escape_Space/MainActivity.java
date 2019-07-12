@@ -19,6 +19,7 @@ import java.util.List;
 
 
 import static com.example.Escape_Space.GameView.gameObjsType;
+import static com.example.Escape_Space.GameView.gameThread;
 import static com.example.Escape_Space.GameView.healthCount;
 import static com.example.Escape_Space.GameView.level;
 import static com.example.Escape_Space.GameView.lifeCount;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         saveData();
+        gameThread.setRunning(false);
     }
 
 //    @Override

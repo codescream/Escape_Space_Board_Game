@@ -61,7 +61,7 @@ class GameView extends SurfaceView {
     private Bitmap button;
     private Bitmap restartBtn;
     private SurfaceHolder holder;
-    private GameThread gameThread;
+    public static GameThread gameThread;
     private Bitmap mFinalbitmap;
     public static int maxlevel = 2;
     private float xcord;
@@ -144,7 +144,7 @@ class GameView extends SurfaceView {
     private  int emptyHeartCount = 3;
     private int emptyHeartLeft = 760;
     private List<Bitmap> emptyCountImg = new ArrayList<Bitmap>();
-    public static int healthCount = 1;//*******************************osama
+    public static int healthCount = 3;//*******************************osama
     private int healthMax = 3;
     private Bitmap statShield;
     private int shieldLeft = 1450;
@@ -154,7 +154,7 @@ class GameView extends SurfaceView {
     private Bitmap statLife;
     private int lifeLeft = 200;
     private List<Bitmap> lifeCountImg = new ArrayList<Bitmap>();
-    public static int lifeCount = 0;//*******************************osama
+    public static int lifeCount = 1;//*******************************osama
     private int lifeMax = 3;
     private boolean showCongratulations = false;
     private boolean gameOver = false;
