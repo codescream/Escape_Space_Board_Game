@@ -1132,6 +1132,10 @@ class GameView extends SurfaceView {
         emptyCountImg.clear();
         lifeCountImg.clear();
         shieldCountImg.clear();
+        resizedPH = spriteheight;
+        resizedPW =  spritewidth;
+        showCongratulations = false;
+        gameEnd = false;
 
         for(int i = 0; i < healthCount; i++)
         {
