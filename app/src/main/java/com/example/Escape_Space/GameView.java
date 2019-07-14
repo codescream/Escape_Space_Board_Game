@@ -685,6 +685,18 @@ class GameView extends SurfaceView {
                                                         healthCount++;
                                                         healthCountImg.add(statHeart);
                                                     }
+                                                    else
+                                                    {
+                                                        if(lifeCountImg.size() != lifeMax)
+                                                        {
+                                                            assets.add(i);
+                                                            lifeCount++;
+                                                            lifeCountImg.add(statLife);
+                                                            healthCountImg.clear();
+                                                            healthCountImg.add(statHeart);
+                                                            healthCount = 1;
+                                                        }
+                                                    }
                                                 }
                                                 break;
                                             case "life":
